@@ -28,32 +28,23 @@ func validInput(x string) bool {
 }
 func rightPlayer(input string, board [8][8]string, player int) bool {
 	x, y := inputToCoords(input)
-	if (player == 1 && strings.Contains(board[y][x], "w")) || (player == 2 && strings.Contains(board[y][x], "b")) {
+	if (player == 1 && board[y][x][0] == 'b') || (player == 2 && board[y][x][0] == 'w') {
 		return true
 	}
 	return false
 }
 func letterToNumber(x string) int {
-	var y int
-	switch x {
-	case "a":
-		y = 1
-	case "b":
-		y = 2
-	case "c":
-		y = 3
-	case "d":
-		y = 4
-	case "e":
-		y = 5
-	case "f":
-		y = 6
-	case "g":
-		y = 7
-	case "h":
-		y = 8
+	m := map[string]int{
+		"a": 1,
+		"b": 2,
+		"c": 3,
+		"d": 4,
+		"e": 5,
+		"f": 6,
+		"g": 7,
+		"h": 8,
 	}
-	return y
+	return m[x]
 }
 func pieceHere(input string, board [8][8]string) bool {
 	x, y := inputToCoords(input)
@@ -160,3 +151,5 @@ func main() {
 		}
 	}
 }
+
+//TODO: хочу имплементировать ASCII символы шахмат шоб красивее было, но это чуть позже мне сегодня лень xD
