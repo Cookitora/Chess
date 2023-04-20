@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -19,15 +20,8 @@ func display(s [8][8]string) {
 	}
 	fmt.Println("a ", "b ", "c ", "d ", "e ", "f ", "g ", "h ")
 }
-func rightLetter(x string) bool {
-	if x >= "a" && x <= "h" {
-		return true
-	}
-	return false
-}
-func rightDigit(x string) bool {
-	y, _ := strconv.Atoi(x)
-	if y > 0 && y < 9 {
+func validInput(x string) bool {
+	if x[0] >= 'a' && x[0] <= 'h' && x[1] <= '8' && x[1] >= '1' {
 		return true
 	}
 	return false
@@ -63,7 +57,7 @@ func letterToNumber(x string) int {
 }
 func pieceHere(input string, board [8][8]string) bool {
 	x, y := inputToCoords(input)
-	fmt.Println(x+1, 8-y, board[y][x])
+	//fmt.Println(x+1, 8-y, board[y][x])
 	if board[y][x] != "" {
 		return true
 	}
@@ -79,16 +73,14 @@ func validPiece(input *string, board [8][8]string, player int) {
 	var x string
 	for {
 		fmt.Scan(&x)
-		if len(x) != 2 || !rightLetter(string(x[0])) || !rightDigit(string(x[1])) || !pieceHere(x, board) || !rightPlayer(x, board, player) {
+		if len(x) != 2 || !validInput(x) || !pieceHere(x, board) || !rightPlayer(x, board, player) {
 			fmt.Println("Error")
 		} else {
 			*input = x
-			fmt.Println("right")
 			return
 		}
 	}
 }
-
 func selectPiece(input string, board *[8][8]string) {
 	x, y := inputToCoords(input)
 	board[y][x] = strings.Replace(board[y][x], " ", "<", 1)
@@ -103,14 +95,14 @@ func validDo(input string, do *string, board *[8][8]string) {
 	for {
 		fmt.Scan(&x)
 		if x == "back" {
+			*do = x
 			unSelectPiece(input, &*board)
 			return
 		}
-		if len(x) != 2 || !rightLetter(string(x[0])) || !rightDigit(string(x[1])) {
+		if len(x) != 2 || !validInput(x) || !validMove(input, x, *board) {
 			fmt.Println("Error")
 		} else {
 			*do = x
-			fmt.Println("right")
 			return
 		}
 	}
@@ -123,8 +115,31 @@ func switchPlayer(player *int) {
 	*player = 1
 	return
 }
+func validMove(input string, do string, board [8][8]string) bool {
+	x1, y1 := inputToCoords(input)
+	x2, y2 := inputToCoords(do)
+	p := board[y1][x1]
+	switch p {
+	case "bH<", "wH<": //конь
+		{
+			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !pieceHere(do, board) { // нужно сделать функцию myPiece чтобы не есть свои, но есть чужие
+				return true
+			}
+		}
+	case "wP<":
+		{
 
-// func validMove()
+		}
+	}
+	return false
+}
+func movePiece(input string, do string, board *[8][8]string) {
+	x1, y1 := inputToCoords(input)
+	x2, y2 := inputToCoords(do)
+	board[y2][x2] = board[y1][x1]
+	board[y1][x1] = ""
+	unSelectPiece(do, &*board)
+}
 func main() {
 	var input, do string
 	var player = 1
@@ -140,6 +155,7 @@ func main() {
 		display(board)
 		validDo(input, &do, &board)
 		if do != "back" {
+			movePiece(input, do, &board)
 			switchPlayer(&player)
 		}
 	}
