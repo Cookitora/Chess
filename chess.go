@@ -111,31 +111,31 @@ func validMove(input string, do string, board [8][8]string, player int) bool {
 	x2, y2 := inputToCoords(do)
 	p := board[y1][x1]
 	switch p {
-	case "bH<", "wH<": //конь
+	case "bH<", "wH<": // конь
 		{
 			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !rightPlayer(do, board, player) {
 				return true
 			}
 		}
-	case "bB<", "wB<":
+	case "bB<", "wB<": // слон
 		{
 			if (math.Abs(float64(x1-x2)) == math.Abs(float64(y1-y2))) && !rightPlayer(do, board, player) {
 				return true
 			}
 		}
-	case "bR<", "wR<":
+	case "bR<", "wR<": // ладья
 		{
 			if ((x1 == x2 && y1 != y2) || (y1 == y2 && x1 != x2)) && !rightPlayer(do, board, player) {
 				return true
 			}
 		}
-	case "bQ<", "wQ<":
+	case "bQ<", "wQ<": // королева
 		{
 			if (math.Abs(float64(x1-x2)) == math.Abs(float64(y1-y2)) || (x1 == x2 && y1 != y2) || (y1 == y2 && x1 != x2)) && !rightPlayer(do, board, player) {
 				return true
 			}
 		}
-	case "bK<", "wK<":
+	case "bK<", "wK<": // король
 		{
 			if (math.Abs(float64(x1-x2)) <= 1 && math.Abs(float64(y1-y2)) <= 1) && !rightPlayer(do, board, player) {
 				return true
@@ -144,29 +144,308 @@ func validMove(input string, do string, board [8][8]string, player int) bool {
 	}
 	return false
 }
-func isKingCheck(board [8][8]string, player string) bool {
+
+func kingStillInCheck(do string, board [8][8]string, player int) bool {
 	var kingRow, kingCol int
-	var opponent string
-
-	if player == "w" {
-		opponent = "b"
-	} else {
-		opponent = "w"
+	p := map[int]string{
+		1: "w",
+		2: "b",
 	}
-
 	// Поиск короля
 	for row := 0; row < 8; row++ {
 		for col := 0; col < 8; col++ {
-			if board[row][col] == player+"k" {
+			if strings.Contains(board[row][col], p[player]+"k") {
 				kingRow = row
 				kingCol = col
 				break
 			}
 		}
 	}
-	// надо бы сделать проверку на атаку короля
-
+	// надо бы сделать проверку на атаку на короля xd
+	attacked := attackedSquares(board, player)
+	if attacked[kingRow][kingCol] == "a  " {
+		return true
+	}
 	return false
+}
+func attackedSquares(board [8][8]string, player int) [8][8]string {
+	var row, col int
+	opponent := map[int]string{
+		1: "b",
+		2: "w",
+	}
+	var attacked [8][8]string
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if strings.Contains(board[i][j], opponent[player]) {
+				piece := board[i][j][1:2]
+				switch piece {
+				case "H": // конь
+					{
+						if i+2 < 8 && j+1 < 8 {
+							attacked[i+2][j+1] = "a  "
+						}
+						if i+2 < 8 && j-1 >= 0 {
+							attacked[i+2][j-1] = "a  "
+						}
+						if i+1 < 8 && j-2 >= 0 {
+							attacked[i+1][j-2] = "a  "
+						}
+						if i+1 < 8 && j+2 < 8 {
+							attacked[i+1][j+2] = "a  "
+						}
+						if i-2 >= 0 && j+1 < 8 {
+							attacked[i-2][j+1] = "a  "
+						}
+						if i-2 >= 0 && j-1 >= 0 {
+							attacked[i-2][j-1] = "a  "
+						}
+						if i-1 >= 0 && j-2 >= 0 {
+							attacked[i-1][j-2] = "a  "
+						}
+						if i-1 >= 0 && j+2 < 8 {
+							attacked[i-1][j+2] = "a  "
+						}
+					}
+				case "B": // слон
+					{
+						row, col = i, j
+						for {
+							row++
+							col++
+							if row >= 8 || col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row++
+							col--
+							if row >= 8 || col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							col++
+							if row < 0 || col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							col--
+							if row < 0 || col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+					}
+				case "R": // ладья
+					{
+						row, col = i, j
+						for {
+							row++
+							if row >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							if row < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							col++
+							if col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							col--
+							if col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+					}
+				case "Q": // королева
+					{
+						row, col = i, j
+						for {
+							row++
+							if row >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							if row < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							col++
+							if col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							col--
+							if col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row++
+							col++
+							if row >= 8 || col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row++
+							col--
+							if row >= 8 || col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							col++
+							if row < 0 || col >= 8 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+						row, col = i, j
+						for {
+							row--
+							col--
+							if row < 0 || col < 0 {
+								break
+							}
+							if board[row][col] != "" {
+								attacked[row][col] = "a  "
+								break
+							}
+							attacked[row][col] = "a  "
+						}
+					}
+				case "K": // король
+					{
+						row, col = i+1, j-2
+						for n := 0; n < 3; n++ {
+							col++
+							if col < 8 && col >= 0 && row < 8 {
+								attacked[row][col] = "a  "
+							}
+						}
+						row, col = i, j-2
+						for n := 0; n < 3; n++ {
+							col++
+							if col < 8 && col >= 0 {
+								attacked[row][col] = "a  "
+							}
+						}
+						row, col = i-1, j-2
+						for n := 0; n < 3; n++ {
+							col++
+							if col < 8 && col >= 0 && row >= 0 {
+								attacked[row][col] = "a  "
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	display(attacked)
+	return attacked
 }
 func movePiece(input string, do string, board *[8][8]string) {
 	x1, y1 := inputToCoords(input)
@@ -180,11 +459,12 @@ func main() {
 	var player = 1
 	var board [8][8]string
 	board[0] = [8]string{"bR ", "bH ", "bB ", "bQ ", "bK ", "bB ", "bH ", "bR "}
-	board[1] = [8]string{"bP ", "bP ", "bP ", "bP ", "bP ", "bP ", "bP ", "bP "}
-	board[6] = [8]string{"wP ", "wP ", "wP ", "wP ", "wP ", "wP ", "wP ", "wP "}
-	board[7] = [8]string{"wR ", "wH ", "wB ", "wQ ", "wK ", "wB ", "wH ", "wR "}
+	//board[1] = [8]string{"bP ", "bP ", "bP ", "bP ", "bP ", "bP ", "bP ", "bP "}
+	//board[6] = [8]string{"wP ", "wP ", "wP ", "wP ", "wP ", "wP ", "wP ", "wP "}
+	//board[7] = [8]string{"wR ", "wH ", "wB ", "wQ ", "wK ", "wB ", "wH ", "wR "}
 	for {
 		display(board)
+		attackedSquares(board, player)
 		validPiece(&input, board, player)
 		selectPiece(input, &board)
 		display(board)
@@ -195,5 +475,3 @@ func main() {
 		}
 	}
 }
-
-//TODO: хочу имплементировать ASCII символы шахмат шоб красивее было, но это чуть позже мне сегодня лень xD
