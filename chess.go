@@ -28,7 +28,7 @@ func validInput(x string) bool {
 }
 func rightPlayer(input string, board [8][8]string, player int) bool {
 	x, y := inputToCoords(input)
-	if (player == 1 && board[y][x][0] == 'b') || (player == 2 && board[y][x][0] == 'w') {
+	if (player == 1 && strings.Contains(board[y][x], "w")) || (player == 2 && strings.Contains(board[y][x], "b")) {
 		return true
 	}
 	return false
@@ -81,7 +81,7 @@ func unSelectPiece(input string, board *[8][8]string) {
 	x, y := inputToCoords(input)
 	board[y][x] = strings.Replace(board[y][x], "<", " ", 1)
 }
-func validDo(input string, do *string, board *[8][8]string) {
+func validDo(input string, do *string, board *[8][8]string, player int) {
 	var x string
 	for {
 		fmt.Scan(&x)
@@ -90,7 +90,7 @@ func validDo(input string, do *string, board *[8][8]string) {
 			unSelectPiece(input, &*board)
 			return
 		}
-		if len(x) != 2 || !validInput(x) || !validMove(input, x, *board) {
+		if len(x) != 2 || !validInput(x) || !validMove(input, x, *board, player) {
 			fmt.Println("Error")
 		} else {
 			*do = x
@@ -106,14 +106,14 @@ func switchPlayer(player *int) {
 	*player = 1
 	return
 }
-func validMove(input string, do string, board [8][8]string) bool {
+func validMove(input string, do string, board [8][8]string, player int) bool {
 	x1, y1 := inputToCoords(input)
 	x2, y2 := inputToCoords(do)
 	p := board[y1][x1]
 	switch p {
 	case "bH<", "wH<": //конь
 		{
-			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !pieceHere(do, board) { // нужно сделать функцию myPiece чтобы не есть свои, но есть чужие
+			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !rightPlayer(do, board, player) { // нужно сделать функцию myPiece чтобы не есть свои, но есть чужие
 				return true
 			}
 		}
@@ -144,7 +144,7 @@ func main() {
 		validPiece(&input, board, player)
 		selectPiece(input, &board)
 		display(board)
-		validDo(input, &do, &board)
+		validDo(input, &do, &board, player)
 		if do != "back" {
 			movePiece(input, do, &board)
 			switchPlayer(&player)
