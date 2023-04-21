@@ -113,15 +113,59 @@ func validMove(input string, do string, board [8][8]string, player int) bool {
 	switch p {
 	case "bH<", "wH<": //конь
 		{
-			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !rightPlayer(do, board, player) { // нужно сделать функцию myPiece чтобы не есть свои, но есть чужие
+			if ((math.Abs(float64(x1-x2)) == 2 && math.Abs(float64(y1-y2)) == 1) || (math.Abs(float64(x1-x2)) == 1 && math.Abs(float64(y1-y2)) == 2)) && !rightPlayer(do, board, player) {
 				return true
 			}
 		}
-	case "wP<":
+	case "bB<", "wB<":
 		{
-
+			if (math.Abs(float64(x1-x2)) == math.Abs(float64(y1-y2))) && !rightPlayer(do, board, player) {
+				return true
+			}
+		}
+	case "bR<", "wR<":
+		{
+			if ((x1 == x2 && y1 != y2) || (y1 == y2 && x1 != x2)) && !rightPlayer(do, board, player) {
+				return true
+			}
+		}
+	case "bQ<", "wQ<":
+		{
+			if (math.Abs(float64(x1-x2)) == math.Abs(float64(y1-y2)) || (x1 == x2 && y1 != y2) || (y1 == y2 && x1 != x2)) && !rightPlayer(do, board, player) {
+				return true
+			}
+		}
+	case "bK<", "wK<":
+		{
+			if (math.Abs(float64(x1-x2)) <= 1 && math.Abs(float64(y1-y2)) <= 1) && !rightPlayer(do, board, player) {
+				return true
+			}
 		}
 	}
+	return false
+}
+func isKingCheck(board [8][8]string, player string) bool {
+	var kingRow, kingCol int
+	var opponent string
+
+	if player == "w" {
+		opponent = "b"
+	} else {
+		opponent = "w"
+	}
+
+	// Поиск короля
+	for row := 0; row < 8; row++ {
+		for col := 0; col < 8; col++ {
+			if board[row][col] == player+"k" {
+				kingRow = row
+				kingCol = col
+				break
+			}
+		}
+	}
+	// надо бы сделать проверку на атаку короля
+
 	return false
 }
 func movePiece(input string, do string, board *[8][8]string) {
